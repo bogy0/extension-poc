@@ -9,16 +9,10 @@
     hello from extension
 
     <script>
-        // Function to send a message to the parent window
         function sendMessageToParent() {
-            // Message you want to send
             const message = "Hello from iframe!";
+            const parentOrigin = 'http://localhost:3000';
 
-            // The origin of the parent window where the message will be sent
-            // Replace 'http://host-page-origin.com' with the actual origin of your host page
-            const parentOrigin = 'http://host-page-origin.com';
-
-            // Send the message to the parent window
             window.parent.postMessage(message, parentOrigin);
         }
 
