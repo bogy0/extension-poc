@@ -8,6 +8,25 @@
 <body>
     hello from extension
 
+    <div id="data-container"></div>
+
+    <script>
+        window.addEventListener("message", receiveMessage, false);
+
+        function receiveMessage(event) {
+            if (event.origin !== "http://localhost:3000") { // Replace with your host origin
+                return;
+            }
+
+            if (event.data && event.data.elements) {
+                const elements = event.data.elements;
+                const formattedData = JSON.stringify(elements, null, 2); // Beautify the JSON data
+
+                document.getElementById('data-container').innerHTML = `<pre>${formattedData}</pre>`;
+            }
+        }
+    </script>
+
     <script>
         function sendMessageToParent() {
             const message = "Hello from iframe!";
