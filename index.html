@@ -14,8 +14,8 @@
         window.addEventListener("message", receiveMessage, false);
 
         function receiveMessage(event) {
-            console.log('receiveMessage');
-            console.log({ event });
+            console.log('FROM IFRAME: receiveMessage');
+            console.log('FROM IFRAME: ', event);
             if (event.origin !== "http://localhost:3000") { // Replace with your host origin
                 return;
             }
