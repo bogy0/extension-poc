@@ -11,6 +11,10 @@
     <a href="https://github.com/bogy0/extension-poc/">Extension PoC Github</a>
     <br />
     <hr />
+    <b>Latest Element changes:</b>
+    
+    <div id="latest-element-changes"></div>
+    <hr />
     <b>List of available element IDs:</b>
     
     <div id="data-container"></div>
@@ -30,6 +34,13 @@
                 const formattedData = JSON.stringify(elements, null, 2); // Beautify the JSON data
 
                 document.getElementById('data-container').innerHTML = `<pre>${formattedData}</pre>`;
+            }
+
+            if (event.data && event.data.latestElementChanges) {
+                const latestElementChanges = event.data.latestElementChanges;
+                const formattedLatestElementChanges = JSON.stringify(latestElementChanges, null, 2); // Beautify the JSON data
+
+                document.getElementById('latest-element-changes').innerHTML = `<pre>${formattedLatestElementChanges}</pre>`;
             }
         }
     </script>
