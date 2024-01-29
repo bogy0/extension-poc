@@ -11,6 +11,9 @@
     <a href="https://github.com/bogy0/extension-poc/">Extension PoC Github</a>
     <br />
     <hr />
+    <b>Draggable test</b>
+    <button id="draggable-element" draggable="true" ondragstart="handleDragStart(event)">Drag me</button>
+    <hr />
     <b>Latest Element changes:</b>
     
     <div id="latest-element-changes"></div>
@@ -60,6 +63,16 @@
         };
 
         // You can also tie this function to other events or user actions
+    </script>
+
+    <script>
+        function handleDragStart(event) {
+            var data = { id: 'draggable-element', content: 'Some content' };
+            event.dataTransfer.setData("text/plain", JSON.stringify(data));
+        
+            // Send data to parent window
+            window.parent.postMessage({ type: 'dragStart', data: data }, '*');
+        }
     </script>
 </body>
 </html>
