@@ -4,16 +4,16 @@
 	}
 
 	// Function to mark an item for synchronization
-	function markToSync(element) {
+	function markToSync(payload) {
 		// Here, you can add your logic to mark the item for synchronization
-		console.log({ element });
+		console.log(payload);
 		alert(`Item marked for synchronization`);
 	}
 
 	// Function to unmark an item from synchronization
-	function unMarkToSync(element) {
+	function unMarkToSync(payload) {
 		// Here, you can add your logic to unmark the item from synchronization
-		console.log({ element });
+		console.log(payload);
 		alert(`Item unmarked from synchronization`);
 	}
 
