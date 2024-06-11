@@ -6,19 +6,13 @@
 	// Function to mark an item for synchronization
 	function markToSync(payload) {
 		// Here, you can add your logic to mark the item for synchronization
-
-		console.log('markToSync');
-		console.log(payload?.element);
 		if (payload?.element) {
-			
 		  const returnData = {
 		    data: payload.element.data,
-		    isUnsaved: true,
+		    isUnsaved: false,
 		    externalIndicator: { iconURL: 'https://www.i3s.es/wp-content/uploads/2021/11/transfer-1.png' },
 		  };
-		  console.log(returnData);
 		  window.RHAPSODYSE.updateElement(returnData);
-		  console.log('updateElement');
 		}
 		alert(`${payload.element.data._elementId} marked for synchronization`);
 	}
@@ -26,8 +20,15 @@
 	// Function to unmark an item from synchronization
 	function unMarkToSync(payload) {
 		// Here, you can add your logic to unmark the item from synchronization
-		console.log(payload);
-		alert(`Item unmarked from synchronization`);
+		if (payload?.element) {
+		  const returnData = {
+		    data: payload.element.data,
+		    isUnsaved: false,
+		    externalIndicator: null,
+		  };
+		  window.RHAPSODYSE.updateElement(returnData);
+		}
+		alert(`${payload.element.data._elementId} unmarked for synchronization`);
 	}
 
 	window.extensionTeamCenter = {
