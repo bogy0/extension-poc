@@ -6,7 +6,7 @@
 	// Function to mark an item for synchronization
 	function markToSync(payload) {
 		// Here, you can add your logic to mark the item for synchronization
-		console.log(payload);
+		console.log(payload.element.data._elementId);
 		alert(`Item marked for synchronization`);
 	}
 
