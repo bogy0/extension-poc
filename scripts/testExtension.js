@@ -24,7 +24,7 @@
 		  const returnData = {
 		    data: payload.element.data,
 		    isUnsaved: false,
-		    externalIndicator: null,
+		    externalIndicator: false,
 		  };
 		  window.RHAPSODYSE.updateElement(returnData);
 		}
