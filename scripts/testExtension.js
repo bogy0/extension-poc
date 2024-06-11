@@ -11,7 +11,7 @@
 		console.log(payload?.element);
 		if (payload?.element) {
 			
-		  returnData = {
+		  const returnData = {
 		    data: element.data,
 		    isUnsaved: true,
 		    externalIndicator: { iconURL: 'https://www.i3s.es/wp-content/uploads/2021/11/transfer-1.png' },
