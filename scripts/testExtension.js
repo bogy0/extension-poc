@@ -6,8 +6,16 @@
 	// Function to mark an item for synchronization
 	function markToSync(payload) {
 		// Here, you can add your logic to mark the item for synchronization
-		console.log(payload.element.data._elementId);
-		alert(`Item marked for synchronization`);
+
+		if (payload?.element) {
+		  returnData = {
+		    data: element.data,
+		    isUnsaved: true,
+		    externalIndicator: { iconURL: 'https://www.i3s.es/wp-content/uploads/2021/11/transfer-1.png' },
+		  };
+		  window.RHAPSODYSE.updateElement(returnData);
+		}
+		alert(`${payload.element.data._elementId} marked for synchronization`);
 	}
 
 	// Function to unmark an item from synchronization
