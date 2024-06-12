@@ -14,7 +14,6 @@
 		  };
 		  window.RHAPSODYSE.updateElement(returnData);
 		}
-		alert(`${payload.element.data._elementId} marked for synchronization`);
 	}
 
 	// Function to unmark an item from synchronization
@@ -28,7 +27,6 @@
 		  };
 		  window.RHAPSODYSE.updateElement(returnData);
 		}
-		alert(`${payload.element.data._elementId} unmarked for synchronization`);
 	}
 
 	window.extensionTeamCenter = {
