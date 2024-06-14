@@ -18,9 +18,20 @@
 	    }
 	];
 
-	function getRandomIndicator() {
-	    const randomIndex = Math.floor(Math.random() * indicators.length);
-	    return indicators[randomIndex];
+	function getRandomIndicators() {
+	    const randomIndicators = [];
+	    const usedIndices = new Set();
+	    const count = Math.floor(Math.random() * indicators.length) + 1;
+	
+	    while (randomIndicators.length < count) {
+	        const randomIndex = Math.floor(Math.random() * indicators.length);
+	        if (!usedIndices.has(randomIndex)) {
+	            randomIndicators.push(indicators[randomIndex]);
+	            usedIndices.add(randomIndex);
+	        }
+	    }
+	
+	    return randomIndicators;
 	}
 
 	async function getIndicators(elementIDs) {
