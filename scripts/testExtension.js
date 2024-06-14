@@ -1,4 +1,48 @@
 (function () {
+	const indicators = [
+	    {
+	        indicatorURL: "https://extension-poc.vercel.app/assets/back-up.png",
+	        indicatorTooltip: "Backup Indicator"
+	    },
+	    {
+	        indicatorURL: "https://extension-poc.vercel.app/assets/check-circle.png",
+	        indicatorTooltip: "Check Circle Indicator"
+	    },
+	    {
+	        indicatorURL: "https://extension-poc.vercel.app/assets/globe.png",
+	        indicatorTooltip: "Globe Indicator"
+	    },
+	    {
+	        indicatorURL: "https://extension-poc.vercel.app/assets/warning.png",
+	        indicatorTooltip: "Warning Indicator"
+	    }
+	];
+
+	function getRandomIndicator() {
+	    const randomIndex = Math.floor(Math.random() * indicators.length);
+	    return indicators[randomIndex];
+	}
+
+	async function getIndicators(elementIDs) {
+	    const results = [];
+	
+	    for (const elementID of elementIDs) {
+	        // Simulate an asynchronous operation
+	        await new Promise(resolve => setTimeout(resolve, 100));
+	
+	        const randomIndicator = getRandomIndicator();
+	        results.push({
+	            elementID: elementID,
+	            externalIndicator: {
+	                indicatorURL: randomIndicator.indicatorURL,
+	                indicatorTooltip: randomIndicator.indicatorTooltip
+	            }
+	        });
+	    }
+	
+	    return results;
+	}
+	
 	function publish(payload) {
 		alert(`HELLO from the external extension script! Payload: ${JSON.stringify(payload, null, 2)}`);
 	}
@@ -33,5 +77,6 @@
 		publish,
 		markToSync,
 		unMarkToSync,
+		getIndicators,
 	};
 })();
