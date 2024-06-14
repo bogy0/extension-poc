@@ -41,13 +41,10 @@
 	        // Simulate an asynchronous operation
 	        await new Promise(resolve => setTimeout(resolve, 100));
 	
-	        const randomIndicator = getRandomIndicators();
+	        const randomIndicators = getRandomIndicators();
 	        results.push({
 	            elementID: elementID,
-	            externalIndicator: {
-	                indicatorURL: randomIndicator.indicatorURL,
-	                indicatorTooltip: randomIndicator.indicatorTooltip
-	            }
+	            externalIndicators: randomIndicators
 	        });
 	    }
 	
