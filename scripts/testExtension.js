@@ -55,17 +55,25 @@
 		alert(`HELLO from the external extension script! Payload: ${JSON.stringify(payload, null, 2)}`);
 	}
 
-	// Function to mark an item for synchronization
-	function markToSync(payload) {
-		// Here, you can add your logic to mark the item for synchronization
-		if (payload?.element) {
-		  const returnData = {
-		    data: payload.element.data,
-		    isUnsaved: false,
-		    externalIndicator: { iconURL: 'https://www.i3s.es/wp-content/uploads/2021/11/transfer-1.png' },
-		  };
-		  window.RHAPSODYSE.updateElement(returnData);
-		}
+	async function markToSync(payload) {
+	    if (!Array.isArray(payload.elementIds) || payload.elementIds.length === 0 || !payload.elementIds.every(id => typeof id === 'string')) {
+	        throw new Error('Invalid elementIds: Must be a non-empty array of strings.');
+	    }
+	
+	    if (typeof payload.Authorization !== 'string' || payload.Authorization.trim() === '') {
+	        throw new Error('Invalid Authorization: Must be a non-empty string.');
+	    }
+	
+	    if (typeof payload.ProjectId !== 'string' || payload.ProjectId.trim() === '') {
+	        throw new Error('Invalid ProjectId: Must be a non-empty string.');
+	    }
+	
+	    if (typeof payload.ConfigurationId !== 'string' || payload.ConfigurationId.trim() === '') {
+	        throw new Error('Invalid ConfigurationId: Must be a non-empty string.');
+	    }
+	
+	    // Call getIndicators with the elementIds from the payload
+	    return await getIndicators(payload.elementIds);
 	}
 
 	// Function to unmark an item from synchronization
