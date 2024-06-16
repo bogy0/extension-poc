@@ -3,7 +3,7 @@
 	    {
 	        indicatorURL: "https://extension-poc.vercel.app/assets/diamond-exclamation.png",
 	        indicatorTooltip: "Error",
-		indicatorDescription: "Some error happened during publishing"
+		indicatorDescription: "An error occurred during the publishing process. This could be due to a variety of reasons such as network issues, server problems, or invalid data inputs. Please check the system logs for more detailed information about the cause of the error, and try to publish again after resolving any identified issues."
 	    },
 	    {
 	        indicatorURL: "https://extension-poc.vercel.app/assets/check-circle.png",
