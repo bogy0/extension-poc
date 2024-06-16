@@ -16,7 +16,7 @@
 		indicatorDescription: "Synchronization completed successfully"
 	    },
 	    {
-	        indicatorURL: "https://extension-poc.vercel.app/assets/warning.png",
+	        indicatorURL: "https://extension-poc.vercel.app/assets/triangle-warning.png",
 	        indicatorTooltip: "Warning Indicator",
 		indicatorDescription: "There is a warning that needs your attention"
 	    }
