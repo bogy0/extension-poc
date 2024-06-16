@@ -81,22 +81,35 @@
 	}
 
 	// Function to unmark an item from synchronization
-	function unMarkToSync(payload) {
-		// Here, you can add your logic to unmark the item from synchronization
-		if (payload?.element) {
-		  const returnData = {
-		    data: payload.element.data,
-		    isUnsaved: false,
-		    externalIndicator: false,
-		  };
-		  window.RHAPSODYSE.updateElement(returnData);
-		}
+	async function unMarkToSync(payload) {
+	    if (!Array.isArray(payload.elementIds) || payload.elementIds.length === 0 || !payload.elementIds.every(id => typeof id === 'string')) {
+	        throw new Error('Invalid elementIds: Must be a non-empty array of strings.');
+	    }
+	
+	    if (typeof payload.Authorization !== 'string' || payload.Authorization.trim() === '') {
+	        throw new Error('Invalid Authorization: Must be a non-empty string.');
+	    }
+	
+	    if (typeof payload.ProjectId !== 'string' || payload.ProjectId.trim() === '') {
+	        throw new Error('Invalid ProjectId: Must be a non-empty string.');
+	    }
+	
+	    if (typeof payload.ConfigurationId !== 'string' || payload.ConfigurationId.trim() === '') {
+	        throw new Error('Invalid ConfigurationId: Must be a non-empty string.');
+	    }
+	
+	    // Simulate unmarking process
+	    const results = payload.elementIds.map(elementID => ({
+	        elementID: elementID,
+	        externalIndicators: undefined // RESET here the externalIndicators 
+	    }));
+	
+	    return results;
 	}
 
 	window.extensionTeamCenter = {
 		publish,
 		markToSync,
 		unMarkToSync,
-		getIndicators,
 	};
 })();
