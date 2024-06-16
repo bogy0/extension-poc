@@ -101,7 +101,7 @@
 	    // Simulate unmarking process
 	    const results = payload.elementIds.map(elementID => ({
 	        elementID: elementID,
-	        externalIndicators: undefined // RESET here the externalIndicators 
+	        externalIndicators: null // RESET here the externalIndicators 
 	    }));
 	
 	    return results;
