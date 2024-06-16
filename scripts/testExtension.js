@@ -1,20 +1,24 @@
 (function () {
 	const indicators = [
 	    {
-	        indicatorURL: "https://extension-poc.vercel.app/assets/back-up.png",
-	        indicatorTooltip: "Backup Indicator"
+	        indicatorURL: "https://extension-poc.vercel.app/assets/diamond-exclamation.png",
+	        indicatorTooltip: "Error",
+		indicatorDescription: "Some error happened during publishing"
 	    },
 	    {
 	        indicatorURL: "https://extension-poc.vercel.app/assets/check-circle.png",
-	        indicatorTooltip: "Check Circle Indicator"
+	        indicatorTooltip: "Published succesful",
+		indicatorDescription: "The content was published successfully"
 	    },
 	    {
-	        indicatorURL: "https://extension-poc.vercel.app/assets/globe.png",
-	        indicatorTooltip: "Globe Indicator"
+	        indicatorURL: "https://extension-poc.vercel.app/assets/rotate-square.png",
+	        indicatorTooltip: "Sync successful",
+		indicatorDescription: "Synchronization completed successfully"
 	    },
 	    {
 	        indicatorURL: "https://extension-poc.vercel.app/assets/warning.png",
-	        indicatorTooltip: "Warning Indicator"
+	        indicatorTooltip: "Warning Indicator",
+		indicatorDescription: "There is a warning that needs your attention"
 	    }
 	];
 
