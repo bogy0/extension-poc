@@ -57,6 +57,8 @@
 	
 	function publish(payload) {
 		alert(`HELLO from the external extension script! Payload: ${JSON.stringify(payload, null, 2)}`);
+		// clear Project Indicator
+		window.RHAPSODYSE.updateProjectIndicator([]);
 	}
 
 	async function markToSync(payload) {
@@ -75,9 +77,10 @@
 	    if (typeof payload.ConfigurationId !== 'string' || payload.ConfigurationId.trim() === '') {
 	        throw new Error('Invalid ConfigurationId: Must be a non-empty string.');
 	    }
-	
-	    // Call getIndicators with the elementIds from the payload
+
+	    // update RHAPSODY SE Project Indicator (indicator next to the Project Name):
 	    window.RHAPSODYSE.updateProjectIndicator(indicators);
+	    // Call getIndicators with the elementIds from the payload
 	    return await getIndicators(payload.elementIds);
 	}
 
