@@ -111,7 +111,7 @@
 	    return results;
 	}
 
-	window.extensionTeamCenter = {
+	window.rhapsodyExtension = {
 		publish,
 		markToSync,
 		unMarkToSync,
