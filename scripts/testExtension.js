@@ -77,7 +77,7 @@
 	    }
 	
 	    // Call getIndicators with the elementIds from the payload
-	    window.RHAPSODYSE.updateProjectIndicator(indicators[0]);
+	    window.RHAPSODYSE.updateProjectIndicator(indicators);
 	    return await getIndicators(payload.elementIds);
 	}
 
