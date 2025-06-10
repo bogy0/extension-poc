@@ -4,6 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        .draggable-item {
+            background: #f5f5f5;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            cursor: grab;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        
+        .draggable-item:hover {
+            background: #e9e9e9;
+            border-color: #007bff;
+        }
+        
+        .draggable-item:active {
+            cursor: grabbing;
+        }
+        
+        .dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+        
+        .status-message {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            display: none;
+        }
+    </style>
 </head>
 <body>
     <h1>Hello from Extension PoC!</h1>
@@ -12,10 +48,30 @@
     <br />
     <hr />
     <b>Draggable test</b>
-    <div draggable="true" ondragstart="setupDragFromTeamcenter(partData)">
-        <h3>Engine Block</h3>
+    
+    <div class="status-message" id="status-message"></div>
+    
+    <div class="draggable-item" draggable="true" id="engine-block">
+        <h3>🔧 Engine Block</h3>
+        <p><strong>Type:</strong> PartUsage</p>
+        <p><strong>ID:</strong> ENG-BLOCK-001</p>
         <p>Drag this part to Rhapsody</p>
     </div>
+    
+    <div class="draggable-item" draggable="true" id="transmission">
+        <h3>⚙️ Transmission</h3>
+        <p><strong>Type:</strong> PartUsage</p>
+        <p><strong>ID:</strong> TRANS-001</p>
+        <p>Drag this transmission to Rhapsody</p>
+    </div>
+    
+    <div class="draggable-item" draggable="true" id="safety-req">
+        <h3>📋 Safety Requirement</h3>
+        <p><strong>Type:</strong> RequirementUsage</p>
+        <p><strong>ID:</strong> SAF-REQ-001</p>
+        <p>Drag this requirement to Rhapsody</p>
+    </div>
+    
     <hr />
     <b>Latest Element changes:</b>
     
@@ -27,73 +83,274 @@
     <div id="data-container"></div>
 
     <script>
+        // Listen for messages from parent Rhapsody application
         window.addEventListener("message", receiveMessage, false);
 
         function receiveMessage(event) {
             console.log('FROM IFRAME: receiveMessage');
             console.log('FROM IFRAME: ', event);
-            if (event.origin !== "http://localhost:3000") { // Replace with your host origin
-                return;
-            }
+            
+            // Validate origin in production
+            // if (event.origin !== "http://localhost:3000") {
+            //     return;
+            // }
 
             if (event.data && event.data.elements) {
                 const elements = event.data.elements;
-                const formattedData = JSON.stringify(elements, null, 2); // Beautify the JSON data
-
+                const formattedData = JSON.stringify(elements, null, 2);
                 document.getElementById('data-container').innerHTML = `<pre>${formattedData}</pre>`;
             }
 
             if (event.data && event.data.latestElementChanges) {
                 const latestElementChanges = event.data.latestElementChanges;
-                const formattedLatestElementChanges = JSON.stringify(latestElementChanges, null, 2); // Beautify the JSON data
-
+                const formattedLatestElementChanges = JSON.stringify(latestElementChanges, null, 2);
                 document.getElementById('latest-element-changes').innerHTML = `<pre>${formattedLatestElementChanges}</pre>`;
             }
+            
+            // Handle responses from Rhapsody
+            if (event.data && event.data.type === 'RHAPSODY_ELEMENT_CREATED') {
+                showStatus(`✅ Element created successfully: ${event.data.elementName}`, 'success');
+            } else if (event.data && event.data.type === 'RHAPSODY_ELEMENT_ERROR') {
+                showStatus(`❌ Error creating element: ${event.data.error}`, 'error');
+            }
         }
-    </script>
 
-    <script>
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('status-message');
+            statusEl.textContent = message;
+            statusEl.style.display = 'block';
+            statusEl.className = `status-message ${type}`;
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 3000);
+        }
+
+        // Send initial message when iframe loads
         function sendMessageToParent() {
-            const message = "Hello from iframe!";
-            const parentOrigin = 'http://localhost:3000';
-
-            window.parent.postMessage(message, parentOrigin);
+            const message = "Hello from Teamcenter Extension PoC iframe!";
+            window.parent.postMessage({
+                type: 'IFRAME_LOADED',
+                message: message
+            }, '*'); // In production, specify exact origin
         }
 
-        // Example: Send a message when the iframe content is loaded
         window.onload = function() {
             sendMessageToParent();
+            setupDragAndDropIntegration();
         };
 
-        // You can also tie this function to other events or user actions
-    </script>
+        // Enhanced drag and drop integration using PostMessage
+        function setupDragAndDropIntegration() {
+            // Get all draggable items
+            const draggableItems = document.querySelectorAll('.draggable-item');
+            
+            draggableItems.forEach(item => {
+                item.addEventListener('dragstart', function(e) {
+                    console.log('Drag started for:', this.id);
+                    
+                    // Add visual feedback
+                    this.classList.add('dragging');
+                    
+                    // Set minimal data for drag visual feedback
+                    e.dataTransfer.effectAllowed = 'copy';
+                    e.dataTransfer.setData('text/plain', 'rhapsody-element');
+                    
+                    // Get element data based on the dragged item
+                    const dragData = getElementDataForItem(this.id);
+                    
+                    // Send the actual data via postMessage to parent Rhapsody application
+                    window.parent.postMessage({
+                        type: 'RHAPSODY_DRAG_START',
+                        data: dragData
+                    }, '*'); // In production, specify exact origin
+                    
+                    console.log('Sent RHAPSODY_DRAG_START to parent:', dragData);
+                    showStatus(`🚀 Started dragging ${dragData.element.properties.declaredName}`, 'info');
+                });
+                
+                item.addEventListener('dragend', function(e) {
+                    console.log('Drag ended for:', this.id);
+                    
+                    // Remove visual feedback
+                    this.classList.remove('dragging');
+                    
+                    // Notify parent that drag ended
+                    window.parent.postMessage({
+                        type: 'RHAPSODY_DRAG_END'
+                    }, '*');
+                    
+                    console.log('Sent RHAPSODY_DRAG_END to parent');
+                });
+                
+                // Optional: Add click handler for testing without drag
+                item.addEventListener('dblclick', function(e) {
+                    console.log('Double-click detected, simulating drag for:', this.id);
+                    
+                    const dragData = getElementDataForItem(this.id);
+                    
+                    window.parent.postMessage({
+                        type: 'RHAPSODY_DRAG_START',
+                        data: dragData
+                    }, '*');
+                    
+                    showStatus(`🖱️ Double-clicked to send ${dragData.element.properties.declaredName}`, 'info');
+                    
+                    // Auto-trigger drop after a short delay
+                    setTimeout(() => {
+                        window.parent.postMessage({
+                            type: 'RHAPSODY_DRAG_END'
+                        }, '*');
+                    }, 1000);
+                });
+            });
+        }
 
-    <script>
-        function setupDragFromTeamcenter(elementData) {
-            const dragData = {
+        // Generate element data based on the dragged item
+        function getElementDataForItem(itemId) {
+            const baseData = {
                 source: {
-                applicationName: "Teamcenter",
-                version: "14.2",
-                identifier: "teamcenter"
-                },
-                element: {
-                type: "PartUsage",
-                properties: {
-                    declaredName: elementData.itemId,
-                    description: elementData.description
-                },
-                metadata: {
-                    category: "Mechanical",
-                    sourceId: elementData.uid
-                }
+                    applicationName: "Teamcenter Extension PoC",
+                    identifier: "teamcenter",
+                    version: "1.0"
                 },
                 version: "1.0"
             };
 
-            // Set the drag data during dragstart event
-            event.dataTransfer.setData("application/x-rhapsody-element", JSON.stringify(dragData));
-            event.dataTransfer.effectAllowed = "copy";
+            switch (itemId) {
+                case 'engine-block':
+                    return {
+                        ...baseData,
+                        element: {
+                            type: "PartUsage",
+                            properties: {
+                                declaredName: "EngineBlock",
+                                description: "Main engine block component from Teamcenter"
+                            },
+                            metadata: {
+                                category: "Mechanical",
+                                sourceId: "ENG-BLOCK-001",
+                                partNumber: "P-ENG-001"
+                            }
+                        }
+                    };
+                    
+                case 'transmission':
+                    return {
+                        ...baseData,
+                        element: {
+                            type: "PartUsage",
+                            properties: {
+                                declaredName: "Transmission",
+                                description: "Vehicle transmission system from Teamcenter"
+                            },
+                            metadata: {
+                                category: "Mechanical",
+                                sourceId: "TRANS-001",
+                                partNumber: "P-TRANS-001"
+                            }
+                        }
+                    };
+                    
+                case 'safety-req':
+                    return {
+                        ...baseData,
+                        element: {
+                            type: "RequirementUsage",
+                            properties: {
+                                declaredName: "SafetyRequirement",
+                                description: "Vehicle safety requirement from Teamcenter",
+                                reqId: "SAF-REQ-001",
+                                text: "The vehicle shall meet all safety standards for passenger protection"
+                            },
+                            metadata: {
+                                category: "Safety",
+                                sourceId: "SAF-REQ-001",
+                                priority: "High"
+                            }
+                        }
+                    };
+                    
+                default:
+                    return {
+                        ...baseData,
+                        element: {
+                            type: "PartUsage",
+                            properties: {
+                                declaredName: "UnknownElement",
+                                description: "Unknown element from Teamcenter"
+                            },
+                            metadata: {
+                                category: "Unknown",
+                                sourceId: itemId
+                            }
+                        }
+                    };
+            }
+        }
+
+        // Legacy function kept for compatibility (but updated to use PostMessage)
+        function setupDragFromTeamcenter(elementData) {
+            console.warn('Legacy setupDragFromTeamcenter called - using PostMessage approach instead');
+            
+            // This function is now handled by the new setupDragAndDropIntegration
+            // but we keep it for backward compatibility
+            const dragData = {
+                source: {
+                    applicationName: "Teamcenter",
+                    version: "14.2",
+                    identifier: "teamcenter"
+                },
+                element: {
+                    type: "PartUsage",
+                    properties: {
+                        declaredName: elementData?.itemId || "LegacyPart",
+                        description: elementData?.description || "Legacy part from Teamcenter"
+                    },
+                    metadata: {
+                        category: "Mechanical",
+                        sourceId: elementData?.uid || "LEGACY-001"
+                    }
+                },
+                version: "1.0"
+            };
+
+            // Send via PostMessage instead of DataTransfer
+            window.parent.postMessage({
+                type: 'RHAPSODY_DRAG_START',
+                data: dragData
+            }, '*');
         }
     </script>
+    
+    <style>
+        .status-message.success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .status-message.error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .status-message.info {
+            background: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+        
+        pre {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 10px;
+            font-size: 0.875rem;
+            overflow-x: auto;
+        }
+    </style>
 </body>
 </html>
