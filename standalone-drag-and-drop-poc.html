@@ -3,562 +3,400 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Standalone Extension - Rhapsody Integration</title>
+    <title>TeamCenter - Drag & Drop POC</title>
     <style>
-        body {
-            font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 20px;
-            background-color: #f4f4f4;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        body {
+            font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
             padding: 20px;
         }
         
         .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-        
-        .integration-buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .btn {
-            padding: 10px 20px;
-            border: 1px solid #0f62fe;
-            background: #0f62fe;
-            color: white;
-            border-radius: 4px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            transition: all 0.2s;
-        }
-        
-        .btn:hover {
-            background: #0043ce;
-            border-color: #0043ce;
-        }
-        
-        .btn.secondary {
             background: white;
-            color: #0f62fe;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
-        .btn.secondary:hover {
-            background: #f4f4f4;
-        }
-        
-        .draggable-item {
-            background: #f5f5f5;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 10px 0;
-            cursor: grab;
-            transition: all 0.2s;
-            user-select: none;
-            position: relative;
-        }
-        
-        .draggable-item:hover {
-            background: #e9e9e9;
-            border-color: #0f62fe;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        
-        .draggable-item:active {
-            cursor: grabbing;
-        }
-        
-        .dragging {
-            opacity: 0.7;
-            transform: scale(0.98);
-            border-color: #0f62fe;
-            background: #e8f4ff;
-        }
-        
-        .status-message {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
-            padding: 12px;
-            border-radius: 4px;
-            margin: 15px 0;
-            display: none;
-            position: relative;
-            animation: slideIn 0.3s ease-out;
-        }
-        
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .status-message.success {
-            background: #d4edda;
-            border-color: #c3e6cb;
-            color: #155724;
-        }
-        
-        .status-message.error {
-            background: #f8d7da;
-            border-color: #f5c6cb;
-            color: #721c24;
-        }
-        
-        .status-message.info {
-            background: #d1ecf1;
-            border-color: #bee5eb;
-            color: #0c5460;
+        .title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .connection-status {
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 8px;
             font-weight: 500;
+            font-size: 0.9rem;
         }
         
-        .connected {
+        .connection-status.connected {
             background: #d4edda;
             color: #155724;
             border: 1px solid #c3e6cb;
         }
         
-        .disconnected {
+        .connection-status.disconnected {
             background: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
         
-        .instructions {
-            background: #e8f4ff;
-            border: 1px solid #b3d7ff;
-            color: #003d73;
-            padding: 15px;
-            border-radius: 6px;
-            margin: 20px 0;
+        .connection-status.connecting {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
         }
         
-        .instructions h4 {
-            margin-top: 0;
+        .main-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+        
+        .elements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .element-card {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: grab;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+        
+        .element-card:hover {
+            border-color: #0066cc;
+            background: #e3f2fd;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 102, 204, 0.2);
+        }
+        
+        .element-card:active {
+            cursor: grabbing;
+            transform: scale(0.98);
+        }
+        
+        .element-card.dragging {
+            opacity: 0.6;
+            transform: rotate(5deg);
         }
         
         .element-type {
-            font-size: 0.85em;
-            background: #f0f0f0;
-            padding: 2px 8px;
-            border-radius: 12px;
-            color: #666;
-            display: inline-block;
-            margin-top: 5px;
+            font-weight: 600;
+            color: #0066cc;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
         }
         
-        .element-id {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.9em;
-            color: #0f62fe;
+        .element-name {
             font-weight: 500;
+            margin-bottom: 10px;
+            color: #333;
         }
         
-        .drag-instructions {
-            margin-top: 15px;
+        .element-description {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .instructions {
+            background: #e8f4fd;
+            border: 1px solid #b3d9f2;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .instructions h3 {
+            color: #0066cc;
+            margin-bottom: 8px;
+        }
+        
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+        
+        .debug-info h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .debug-log {
+            max-height: 200px;
+            overflow-y: auto;
+            background: white;
             padding: 10px;
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
             border-radius: 4px;
-            color: #856404;
+            white-space: pre-wrap;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🚀 Standalone Extension PoC</h1>
-            <p>Cross-origin drag and drop integration with Rhapsody Systems Engineering</p>
-            <div id="connection-status" class="connection-status disconnected">
-                ❌ Not connected to Rhapsody
-            </div>
+    <div class="header">
+        <div class="title">
+            🏢 TeamCenter Elements
         </div>
-        
-        <div class="integration-buttons">
-            <button class="btn" onclick="openRhapsodyWindow()">🔗 Open Rhapsody</button>
-            <button class="btn secondary" onclick="testConnection()">🔍 Test Connection</button>
-            <button class="btn secondary" onclick="clearStatus()">🧹 Clear Messages</button>
+        <div class="connection-status" id="connectionStatus">
+            <span id="connectionIcon">⏳</span>
+            <span id="connectionText">Connecting to Rhapsody...</span>
         </div>
-        
+    </div>
+
+    <div class="main-content">
         <div class="instructions">
-            <h4>📋 How to use:</h4>
-            <ol>
-                <li>Click "Open Rhapsody" to open the target application in a new window</li>
-                <li>Drag any element below to the Rhapsody ExplorerView</li>
-                <li>The element will be automatically created in Rhapsody</li>
-                <li>You'll receive success/error feedback here</li>
-            </ol>
+            <h3>Instructions</h3>
+            <p>Drag the elements below to the Rhapsody application to create new SysML elements. The connection status above shows your current connection to Rhapsody.</p>
         </div>
-        
-        <div class="status-message" id="status-message"></div>
-        
-        <h3>🎯 Available Elements for Drag & Drop</h3>
-        
-        <div class="draggable-item" draggable="true" id="engine-block">
-            <h3>🔧 Engine Block</h3>
-            <p><strong>Type:</strong> <span class="element-type">PartUsage</span></p>
-            <p><strong>ID:</strong> <span class="element-id">ENG-BLOCK-001</span></p>
-            <p>Main engine block component from external system</p>
-            <div class="drag-instructions">
-                💡 Drag this to Rhapsody's ExplorerView to create a PartUsage element
+
+        <div class="elements-grid">
+            <div class="element-card" draggable="true" data-element-type="PartUsage" data-element-id="TC001">
+                <div class="element-type">PartUsage</div>
+                <div class="element-name">Motor Assembly</div>
+                <div class="element-description">A high-performance electric motor assembly designed for automotive applications. Includes rotor, stator, and control electronics.</div>
+            </div>
+
+            <div class="element-card" draggable="true" data-element-type="RequirementUsage" data-element-id="TC002">
+                <div class="element-type">RequirementUsage</div>
+                <div class="element-name">Performance Requirement</div>
+                <div class="element-description">The system shall achieve a minimum efficiency of 95% under standard operating conditions with maximum power output of 150kW.</div>
+            </div>
+
+            <div class="element-card" draggable="true" data-element-type="ActionUsage" data-element-id="TC003">
+                <div class="element-type">ActionUsage</div>
+                <div class="element-name">Start Engine Sequence</div>
+                <div class="element-description">Complete sequence for starting the engine including pre-checks, ignition, and warm-up procedures.</div>
+            </div>
+
+            <div class="element-card" draggable="true" data-element-type="InterfaceUsage" data-element-id="TC004">
+                <div class="element-type">InterfaceUsage</div>
+                <div class="element-name">CAN Bus Interface</div>
+                <div class="element-description">Controller Area Network interface for communication between ECUs with 500kbps data rate and error handling.</div>
+            </div>
+
+            <div class="element-card" draggable="true" data-element-type="ItemUsage" data-element-id="TC005">
+                <div class="element-type">ItemUsage</div>
+                <div class="element-name">Brake Fluid</div>
+                <div class="element-description">DOT 4 brake fluid with high boiling point and corrosion inhibitors for hydraulic brake systems.</div>
+            </div>
+
+            <div class="element-card" draggable="true" data-element-type="PortUsage" data-element-id="TC006">
+                <div class="element-type">PortUsage</div>
+                <div class="element-name">Power Input Port</div>
+                <div class="element-description">12V DC power input port with overcurrent protection and reverse polarity protection.</div>
             </div>
         </div>
-        
-        <div class="draggable-item" draggable="true" id="transmission">
-            <h3>⚙️ Transmission System</h3>
-            <p><strong>Type:</strong> <span class="element-type">PartUsage</span></p>
-            <p><strong>ID:</strong> <span class="element-id">TRANS-001</span></p>
-            <p>Vehicle transmission system component</p>
-            <div class="drag-instructions">
-                💡 Drag this to Rhapsody's ExplorerView to create a PartUsage element
-            </div>
-        </div>
-        
-        <div class="draggable-item" draggable="true" id="safety-req">
-            <h3>📋 Safety Requirement</h3>
-            <p><strong>Type:</strong> <span class="element-type">RequirementUsage</span></p>
-            <p><strong>ID:</strong> <span class="element-id">SAF-REQ-001</span></p>
-            <p>Critical safety requirement for vehicle systems</p>
-            <div class="drag-instructions">
-                💡 Drag this to Rhapsody's ExplorerView to create a RequirementUsage element
-            </div>
-        </div>
-        
-        <div class="draggable-item" draggable="true" id="brake-action">
-            <h3>🛑 Brake Action</h3>
-            <p><strong>Type:</strong> <span class="element-type">ActionUsage</span></p>
-            <p><strong>ID:</strong> <span class="element-id">BRK-ACT-001</span></p>
-            <p>Emergency braking action sequence</p>
-            <div class="drag-instructions">
-                💡 Drag this to Rhapsody's ExplorerView to create an ActionUsage element
-            </div>
-        </div>
-        
-        <hr style="margin: 30px 0; border: none; border-top: 1px solid #e0e0e0;">
-        
-        <h3>📊 Integration Status</h3>
-        <div id="debug-info">
-            <p><strong>Integration Mode:</strong> Standalone (no embedding required)</p>
-            <p><strong>Communication:</strong> PostMessage + HTML5 Drag and Drop</p>
-            <p><strong>Target:</strong> window.opener (Rhapsody application)</p>
+
+        <div class="debug-info">
+            <h4>Debug Information</h4>
+            <div class="debug-log" id="debugLog"></div>
         </div>
     </div>
 
     <script>
-        // Global variables
+        // Debug logging function
+        function debugLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logElement = document.getElementById('debugLog');
+            const logMessage = `[${timestamp}] ${message}\n`;
+            logElement.textContent += logMessage;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(`[TeamCenter] ${message}`);
+        }
+
+        // Connection state management
+        let isConnectedToRhapsody = false;
         let rhapsodyWindow = null;
-        let isConnected = false;
-        
-        // MIME type for Rhapsody drag data (must match the main application)
-        const RHAPSODY_DRAG_MIME_TYPE = 'application/x-rhapsody-element';
-        
-        // Initialize when page loads
-        window.addEventListener('DOMContentLoaded', function() {
-            setupDragAndDropIntegration();
-            setupPostMessageListener();
-            checkConnection();
+
+        function updateConnectionStatus(status, text) {
+            const statusElement = document.getElementById('connectionStatus');
+            const iconElement = document.getElementById('connectionIcon');
+            const textElement = document.getElementById('connectionText');
             
-            // Auto-check connection every 5 seconds
-            setInterval(checkConnection, 5000);
+            statusElement.className = `connection-status ${status}`;
+            
+            switch(status) {
+                case 'connected':
+                    iconElement.textContent = '✅';
+                    break;
+                case 'disconnected':
+                    iconElement.textContent = '❌';
+                    break;
+                case 'connecting':
+                    iconElement.textContent = '⏳';
+                    break;
+            }
+            
+            textElement.textContent = text;
+            debugLog(`Connection status: ${status} - ${text}`);
+        }
+
+        // Initialize connection detection
+        function initializeConnection() {
+            debugLog('Initializing TeamCenter application...');
+            debugLog(`Window opener: ${window.opener ? 'Present' : 'Not present'}`);
+            debugLog(`Window parent: ${window.parent !== window ? 'Present' : 'Not present'}`);
+            
+            // Check if opened by Rhapsody
+            if (window.opener) {
+                debugLog('Detected window.opener - sending TEAMCENTER_READY message');
+                rhapsodyWindow = window.opener;
+                
+                // Send ready message to Rhapsody
+                rhapsodyWindow.postMessage({
+                    type: 'TEAMCENTER_READY',
+                    source: 'TeamCenter',
+                    timestamp: Date.now()
+                }, '*');
+                
+                updateConnectionStatus('connecting', 'Connecting to Rhapsody...');
+                
+                // Set a timeout to check connection
+                setTimeout(() => {
+                    if (!isConnectedToRhapsody) {
+                        updateConnectionStatus('disconnected', 'Not connected to Rhapsody');
+                        debugLog('Connection timeout - no response from Rhapsody');
+                    }
+                }, 5000);
+            } else {
+                updateConnectionStatus('disconnected', 'Not opened by Rhapsody');
+                debugLog('Not opened by Rhapsody - standalone mode');
+            }
+        }
+
+        // Listen for messages from Rhapsody
+        window.addEventListener('message', function(event) {
+            debugLog(`Received message: ${JSON.stringify(event.data)} from origin: ${event.origin}`);
+            
+            if (event.data && event.data.type === 'RHAPSODY_READY') {
+                debugLog('Received RHAPSODY_READY - connection established');
+                isConnectedToRhapsody = true;
+                rhapsodyWindow = event.source;
+                updateConnectionStatus('connected', 'Connected to Rhapsody');
+                
+                // Send confirmation back
+                rhapsodyWindow.postMessage({
+                    type: 'TEAMCENTER_READY',
+                    source: 'TeamCenter',
+                    timestamp: Date.now()
+                }, '*');
+                debugLog('Sent TEAMCENTER_READY confirmation');
+            }
         });
-        
-        // Set up drag and drop with both HTML5 and PostMessage coordination
-        function setupDragAndDropIntegration() {
-            const draggableItems = document.querySelectorAll('.draggable-item');
+
+        // Drag and drop functionality
+        function setupDragAndDrop() {
+            const elementCards = document.querySelectorAll('.element-card');
             
-            draggableItems.forEach(item => {
-                item.addEventListener('dragstart', function(e) {
-                    console.log('🚀 Drag started for:', this.id);
+            elementCards.forEach(card => {
+                card.addEventListener('dragstart', function(e) {
+                    debugLog(`Starting drag for: ${this.dataset.elementType} - ${this.querySelector('.element-name').textContent}`);
                     
-                    // Add visual feedback
                     this.classList.add('dragging');
                     
-                    // Get element data
-                    const dragData = getElementDataForItem(this.id);
+                    const dragData = {
+                        source: 'TeamCenter',
+                        elementType: this.dataset.elementType,
+                        elementId: this.dataset.elementId,
+                        elementName: this.querySelector('.element-name').textContent,
+                        elementDescription: this.querySelector('.element-description').textContent,
+                        properties: {
+                            name: this.querySelector('.element-name').textContent,
+                            description: this.querySelector('.element-description').textContent,
+                            id: this.dataset.elementId,
+                            sourceApplication: 'TeamCenter'
+                        },
+                        metadata: {
+                            dragStartTime: Date.now(),
+                            userAgent: navigator.userAgent
+                        }
+                    };
                     
-                    // Set data for HTML5 drag and drop (cross-origin)
+                    // Set data for HTML5 drag and drop
+                    e.dataTransfer.setData('application/x-rhapsody-element', JSON.stringify(dragData));
+                    e.dataTransfer.setData('text/plain', `${dragData.elementType}: ${dragData.elementName}`);
                     e.dataTransfer.effectAllowed = 'copy';
-                    e.dataTransfer.setData(RHAPSODY_DRAG_MIME_TYPE, JSON.stringify(dragData));
-                    e.dataTransfer.setData('text/plain', `rhapsody-element:${dragData.element.properties.declaredName}`);
                     
-                    // Send coordination message via postMessage (if Rhapsody window is available)
-                    if (rhapsodyWindow && !rhapsodyWindow.closed) {
+                    // Notify Rhapsody that drag started
+                    if (isConnectedToRhapsody && rhapsodyWindow) {
                         rhapsodyWindow.postMessage({
                             type: 'RHAPSODY_DRAG_START',
                             data: dragData
-                        }, '*'); // In production, specify exact origin
-                        
-                        console.log('📨 Sent RHAPSODY_DRAG_START via postMessage');
-                        showStatus(`🚀 Started dragging ${dragData.element.properties.declaredName}`, 'info');
-                    } else {
-                        // If no Rhapsody window, just rely on HTML5 drag and drop
-                        showStatus(`🚀 Dragging ${dragData.element.properties.declaredName} - drop on Rhapsody ExplorerView`, 'info');
+                        }, '*');
+                        debugLog('Sent RHAPSODY_DRAG_START message');
                     }
                 });
                 
-                item.addEventListener('dragend', function(e) {
-                    console.log('🏁 Drag ended for:', this.id);
-                    
-                    // Remove visual feedback
+                card.addEventListener('dragend', function(e) {
+                    debugLog('Drag ended');
                     this.classList.remove('dragging');
                     
-                    // Send coordination message (if available)
-                    if (rhapsodyWindow && !rhapsodyWindow.closed) {
+                    // Notify Rhapsody that drag ended
+                    if (isConnectedToRhapsody && rhapsodyWindow) {
                         rhapsodyWindow.postMessage({
                             type: 'RHAPSODY_DRAG_END'
                         }, '*');
-                        
-                        console.log('📨 Sent RHAPSODY_DRAG_END via postMessage');
-                    }
-                });
-                
-                // Optional: Double-click for testing
-                item.addEventListener('dblclick', function(e) {
-                    console.log('🖱️ Double-click test for:', this.id);
-                    
-                    const dragData = getElementDataForItem(this.id);
-                    
-                    if (rhapsodyWindow && !rhapsodyWindow.closed) {
-                        rhapsodyWindow.postMessage({
-                            type: 'RHAPSODY_DRAG_START',
-                            data: dragData
-                        }, '*');
-                        
-                        showStatus(`🖱️ Double-clicked ${dragData.element.properties.declaredName}`, 'info');
-                        
-                        // Auto-trigger drop after delay for testing
-                        setTimeout(() => {
-                            rhapsodyWindow.postMessage({
-                                type: 'RHAPSODY_DRAG_END'
-                            }, '*');
-                        }, 1000);
-                    } else {
-                        showStatus('❌ No Rhapsody window available - click "Open Rhapsody" first', 'error');
+                        debugLog('Sent RHAPSODY_DRAG_END message');
                     }
                 });
             });
         }
-        
-        // Listen for responses from Rhapsody
-        function setupPostMessageListener() {
-            window.addEventListener('message', function(event) {
-                console.log('📨 Received message:', event.data);
-                
-                // Handle responses from Rhapsody
-                if (event.data?.type === 'RHAPSODY_ELEMENT_CREATED') {
-                    showStatus(`✅ Element created successfully: ${event.data.elementName}`, 'success');
-                    console.log('✅ Element created:', event.data.elementName, 'ID:', event.data.elementId);
-                } else if (event.data?.type === 'RHAPSODY_ELEMENT_ERROR') {
-                    showStatus(`❌ Error creating element: ${event.data.error}`, 'error');
-                    console.error('❌ Element creation failed:', event.data.error);
-                }
-            });
-        }
-        
-        // Generate element data based on the dragged item
-        function getElementDataForItem(itemId) {
-            const baseData = {
-                source: {
-                    applicationName: "Standalone Extension PoC",
-                    identifier: "standalone-extension",
-                    version: "1.0"
-                },
-                version: "1.0"
-            };
 
-            switch (itemId) {
-                case 'engine-block':
-                    return {
-                        ...baseData,
-                        element: {
-                            type: "PartUsage",
-                            properties: {
-                                declaredName: "EngineBlock",
-                                description: "Main engine block component from external system"
-                            },
-                            metadata: {
-                                category: "Mechanical",
-                                sourceId: "ENG-BLOCK-001",
-                                partNumber: "P-ENG-001"
-                            }
-                        }
-                    };
-                    
-                case 'transmission':
-                    return {
-                        ...baseData,
-                        element: {
-                            type: "PartUsage",
-                            properties: {
-                                declaredName: "TransmissionSystem",
-                                description: "Vehicle transmission system component"
-                            },
-                            metadata: {
-                                category: "Mechanical",
-                                sourceId: "TRANS-001",
-                                partNumber: "P-TRANS-001"
-                            }
-                        }
-                    };
-                    
-                case 'safety-req':
-                    return {
-                        ...baseData,
-                        element: {
-                            type: "RequirementUsage",
-                            properties: {
-                                declaredName: "SafetyRequirement",
-                                description: "Critical safety requirement for vehicle systems",
-                                reqId: "SAF-REQ-001",
-                                text: "The vehicle shall meet all safety standards for passenger protection"
-                            },
-                            metadata: {
-                                category: "Safety",
-                                sourceId: "SAF-REQ-001",
-                                priority: "High"
-                            }
-                        }
-                    };
-                    
-                case 'brake-action':
-                    return {
-                        ...baseData,
-                        element: {
-                            type: "ActionUsage",
-                            properties: {
-                                declaredName: "BrakeAction",
-                                description: "Emergency braking action sequence"
-                            },
-                            metadata: {
-                                category: "Action",
-                                sourceId: "BRK-ACT-001",
-                                trigger: "Emergency"
-                            }
-                        }
-                    };
-                    
-                default:
-                    return {
-                        ...baseData,
-                        element: {
-                            type: "PartUsage",
-                            properties: {
-                                declaredName: "UnknownElement",
-                                description: "Unknown element from external system"
-                            },
-                            metadata: {
-                                category: "Unknown",
-                                sourceId: itemId
-                            }
-                        }
-                    };
-            }
-        }
-        
-        // Open Rhapsody in a new window
-        function openRhapsodyWindow() {
-            const rhapsodyUrl = 'http://localhost:3000'; // Adjust this URL as needed
-            rhapsodyWindow = window.open(rhapsodyUrl, 'rhapsody', 'width=1200,height=800');
-            
-            if (rhapsodyWindow) {
-                showStatus('🔗 Opened Rhapsody window - you can now drag elements!', 'success');
-                
-                // Check connection after a brief delay
-                setTimeout(checkConnection, 1000);
-            } else {
-                showStatus('❌ Failed to open Rhapsody window - check popup blocker', 'error');
-            }
-        }
-        
-        // Test connection to Rhapsody
-        function testConnection() {
-            if (rhapsodyWindow && !rhapsodyWindow.closed) {
-                showStatus('✅ Connection to Rhapsody is active', 'success');
-                updateConnectionStatus(true);
-            } else {
-                showStatus('❌ No active connection to Rhapsody', 'error');
-                updateConnectionStatus(false);
-            }
-        }
-        
-        // Check connection status
-        function checkConnection() {
-            const wasConnected = isConnected;
-            isConnected = rhapsodyWindow && !rhapsodyWindow.closed;
-            
-            updateConnectionStatus(isConnected);
-            
-            // Show notification only on status change
-            if (wasConnected && !isConnected) {
-                showStatus('⚠️ Connection to Rhapsody lost', 'error');
-            } else if (!wasConnected && isConnected) {
-                showStatus('✅ Connected to Rhapsody', 'success');
-            }
-        }
-        
-        // Update connection status display
-        function updateConnectionStatus(connected) {
-            const statusEl = document.getElementById('connection-status');
-            if (connected) {
-                statusEl.textContent = '✅ Connected to Rhapsody';
-                statusEl.className = 'connection-status connected';
-            } else {
-                statusEl.textContent = '❌ Not connected to Rhapsody';
-                statusEl.className = 'connection-status disconnected';
-            }
-        }
-        
-        // Show status message
-        function showStatus(message, type = 'info') {
-            const statusEl = document.getElementById('status-message');
-            statusEl.textContent = message;
-            statusEl.className = `status-message ${type}`;
-            statusEl.style.display = 'block';
-            
-            console.log(`[${type.toUpperCase()}] ${message}`);
-            
-            // Auto-hide after 5 seconds
-            setTimeout(() => {
-                statusEl.style.display = 'none';
-            }, 5000);
-        }
-        
-        // Clear status messages
-        function clearStatus() {
-            const statusEl = document.getElementById('status-message');
-            statusEl.style.display = 'none';
-        }
-        
-        // Handle window close
+        // Handle window closing
         window.addEventListener('beforeunload', function() {
-            if (rhapsodyWindow && !rhapsodyWindow.closed) {
-                // Optional: notify Rhapsody that we're closing
+            if (isConnectedToRhapsody && rhapsodyWindow) {
                 rhapsodyWindow.postMessage({
-                    type: 'EXTERNAL_APP_CLOSING'
+                    type: 'TEAMCENTER_CLOSING',
+                    source: 'TeamCenter'
                 }, '*');
+                debugLog('Sent TEAMCENTER_CLOSING message');
             }
+        });
+
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            debugLog('DOM loaded - initializing application');
+            initializeConnection();
+            setupDragAndDrop();
         });
     </script>
 </body>
-</html> 
+</html>
