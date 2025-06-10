@@ -12,7 +12,10 @@
     <br />
     <hr />
     <b>Draggable test</b>
-    <button id="draggable-element" draggable="true" ondragstart="handleDragStart(event)">Test</button>
+    <div draggable="true" ondragstart="setupDragFromTeamcenter(partData)">
+        <h3>Engine Block</h3>
+        <p>Drag this part to Rhapsody</p>
+    </div>
     <hr />
     <b>Latest Element changes:</b>
     
@@ -66,12 +69,30 @@
     </script>
 
     <script>
-        function handleDragStart(event) {
-            var data = { id: 'draggable-element', content: 'Some content' };
-            event.dataTransfer.setData("text/plain", JSON.stringify(data));
-        
-            // Send data to parent window
-            window.parent.postMessage({ type: 'dragStart', data: data }, '*');
+        function setupDragFromTeamcenter(elementData) {
+            const dragData = {
+                source: {
+                applicationName: "Teamcenter",
+                version: "14.2",
+                identifier: "teamcenter"
+                },
+                element: {
+                type: "PartUsage",
+                properties: {
+                    declaredName: elementData.itemId,
+                    description: elementData.description
+                },
+                metadata: {
+                    category: "Mechanical",
+                    sourceId: elementData.uid
+                }
+                },
+                version: "1.0"
+            };
+
+            // Set the drag data during dragstart event
+            event.dataTransfer.setData("application/x-rhapsody-element", JSON.stringify(dragData));
+            event.dataTransfer.effectAllowed = "copy";
         }
     </script>
 </body>
