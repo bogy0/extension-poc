@@ -1,5 +1,5 @@
 (function () {
-	// Access to exposed RHAPSODYSE events and functionsss
+	// Access to exposed RHAPSODYSE events and functions
 	const {
 		EXTENSION_EVENTS, // Events that extensions can emit
 		CLIENT_EVENTS, // Events from the client that extensions can listen to
