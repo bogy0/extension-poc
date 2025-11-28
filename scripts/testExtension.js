@@ -10,6 +10,8 @@
 		modelAPI, // Read and update model
 	} = window.RHAPSODYSE;
 
+	const extensionId = document.currentScript?.getAttribute('extension-id') ?? undefined;
+
 	// NOTIFICATION type constants
 	const notificationKind = Object.freeze({
 		ERROR: 'error',
@@ -27,21 +29,25 @@
 			indicatorTooltip: 'Extension Error',
 			indicatorDescription:
 				'An error occurred during the publishing process. This could be due to a variety of reasons such as network issues, server problems, or invalid data inputs. Please check the system logs for more detailed information about the cause of the error, and try to publish again after resolving any identified issues.',
+			extensionId: extensionId,
 		},
 		{
 			indicatorURL: 'https://extension-poc.vercel.app/assets/check-circle.png',
 			indicatorTooltip: 'Extension - Published successfully',
 			indicatorDescription: 'The content was published successfully',
+			extensionId: extensionId,
 		},
 		{
 			indicatorURL: 'https://extension-poc.vercel.app/assets/rotate-square.png',
 			indicatorTooltip: 'Extension - Synced successfully',
 			indicatorDescription: 'Synchronization completed successfully',
+			extensionId: extensionId,
 		},
 		{
 			indicatorURL: 'https://extension-poc.vercel.app/assets/triangle-warning.png',
 			indicatorTooltip: 'Extension - Warning',
 			indicatorDescription: 'There is a warning that needs your attention',
+			extensionId: extensionId,
 		},
 	];
 
@@ -96,100 +102,105 @@
 	}
 
 	async function addPorts(payload) {
-			var selectedEl = { elementId: payload.data.elementIds[0] };
-			const elName = (await modelAPI.getPropertyValue(selectedEl, "declaredName"))
-					.data;
-			let portNames = ["p1", "p2"];
-			let portProperties = [
-				[{ key: "direction", value: "in" }],
-				[{ key: "direction", value: "out" }],
-			];
-			if (elName === "lightControl") {
-				portNames = ["pDoorHandling", "pLight"];
+		var selectedEl = { elementId: payload.data.elementIds[0] };
+		const elName = (await modelAPI.getPropertyValue(selectedEl, 'declaredName')).data;
+		let portNames = ['p1', 'p2'];
+		let portProperties = [[{ key: 'direction', value: 'in' }], [{ key: 'direction', value: 'out' }]];
+		if (elName === 'lightControl') {
+			portNames = ['pDoorHandling', 'pLight'];
+		} else if (elName === 'temperatureControl') {
+			portNames = ['pTemperature', 'pHeater'];
+		}
+		const createdPorts = [];
+		let index = 0;
+		for (const name of portNames) {
+			const props = portProperties ? portProperties[index++] : [];
+			const newEl = (
+				await modelAPI.addNewMemberElement(selectedEl, 'PortUsage', [{ key: 'declaredName', value: name }, ...props])
+			).data;
+			let portsList = [];
+			for (const port of createdPorts) {
+				portsList.push((await modelAPI.getPropertyValue(port, 'declaredName')).data);
 			}
-			else if (elName === "temperatureControl") {
-				portNames = ["pTemperature", "pHeater"];
-			}
-			const createdPorts = [];
-			let index = 0;
-			for (const name of portNames) {
-				const props = portProperties ? portProperties[index++] : [];
-				const newEl = (await modelAPI.addNewMemberElement(selectedEl, "PortUsage", [
-					{ key: "declaredName", value: name },
-					...props,
-				])).data;
-				let portsList = [];
-				for (const port of createdPorts) {
-					portsList.push((await modelAPI.getPropertyValue(port, "declaredName")).data);
-				}
-				const notificationData = {
-					title: "Add some ports",
-					subtitle: portsList.length
-						? `Successfully created port: ${portsList.join(", ")}`
-						: "No ports were created",
-					kind: notificationKind.SUCCESS,
-					timeout: 10000,
-				};
-				// show notification with success message
-				sendEvent(EXTENSION_EVENTS.SHOW_NOTIFICATION, notificationData);
-			}
-    }
+			const notificationData = {
+				title: 'Add some ports',
+				subtitle: portsList.length ? `Successfully created port: ${portsList.join(', ')}` : 'No ports were created',
+				kind: notificationKind.SUCCESS,
+				timeout: 10000,
+			};
+			// show notification with success message
+			sendEvent(EXTENSION_EVENTS.SHOW_NOTIFICATION, notificationData);
+		}
+	}
 
 	// UTILITY FUNCTIONS ends
 
 	//  INITIALIZE THE EXTENSION by sending an INIT event to define:
 	// - extra buttons / actions in the client like "Publish" etc.
 	// - callback functions (all callback receives in the first parameter the following information: Authorization, ProjectId, ConfigurationId)
+	// Action Label Format:
+	// - Format: label: "{Action Label}"
+	// You can also group actions in the menus, to do that just set the action label with the below format:
+	// - Use the "Group Name/" prefix to group actions by extension
+	// - Format: label: "Group Name/{Action Label}"
+	//
+	// This naming convention is necessary:
+	// - Multiple extensions to coexist without label conflicts
+	// - Logical grouping of actions in the UI
+	// - Clear extension ownership of each action
 	const initActions = {
 		actions: {
 			[LAYOUT_PLACEMENT.GLOBAL_EDITOR_TOOLBAR]: [
 				{
 					id: 'publish',
-					label: 'Publish',
+					label: 'EXTERNAL SCRIPT Publish',
 					onAction: publish,
+					actionInfo: { extensionId: extensionId },
 				},
 				{
 					id: 'settingsInfo',
-					label: 'Settings Info',
+					label: 'EXTERNAL SCRIPT Settings Info',
 					onAction: () => {
 						// SAMPLE CODE to get exposed settings data from the client
 						alert(JSON.stringify(settings, null, 2));
 					},
+					actionInfo: { extensionId: extensionId },
 				},
 				{
 					id: 'extendParts',
-					label: 'Extend Parts',
+					label: 'EXTERNAL SCRIPT Extend Parts',
 					onAction: extendParts,
 					actionInfo: {
 						afterSeparator: true,
 						isDanger: true,
+						extensionId: extensionId,
 					},
 				},
 				{
-					id: "add ports",
-					label: "Add some port",
+					id: 'add ports',
+					label: 'EXTERNAL SCRIPT Add some port',
 					onAction: addPorts,
-					actionInfo: { applicableTo: "PartUsage" },
+					actionInfo: { applicableTo: 'PartUsage', extensionId: extensionId },
 				},
 			],
 			[LAYOUT_PLACEMENT.EXPLORER_OVERFLOW_MENU]: [
 				{
 					id: 'markToSync',
-					label: 'Mark to Sync',
+					label: 'EXTERNAL SCRIPT Mark to Sync',
 					onAction: markToSync,
+					actionInfo: { extensionId: extensionId },
 				},
 				{
 					id: 'unmarkToSync',
-					label: 'Unmark to Sync',
+					label: 'EXTERNAL SCRIPT Unmark to Sync',
 					onAction: unMarkToSync,
-					actionInfo: { enabled: false },
+					actionInfo: { enabled: false, extensionId: extensionId },
 				},
 			],
 		},
 	};
 
 	sendEvent(EXTENSION_EVENTS.INIT, initActions);
-
 
 	const unsubscribe = subscribe(CLIENT_EVENTS.ELEMENTS_LOADED, async ({ data, config }) => {
 		// example logic to select elements to add indicators, you can write any logic here
@@ -235,18 +246,29 @@
 		sendEvent(EXTENSION_EVENTS.UPDATE_ELEMENT_INDICATORS, elementIndicators);
 	});
 
-	// ACTION function definitions starts
+	// ACTION function definitions starts, multi-action example
 	function publish(payload) {
 		const notificationData = {
 			title: 'Published successfully',
 			subtitle: `The content was published successfully for the project with id: ${payload.ProjectId}`,
 			kind: notificationKind.SUCCESS,
 			timeout: 10000,
-			isActionable: true, // optional, required if actionButtonLabel is provided
-			actionButtonLabel: 'Action after publish', // optional, required if isActionable is true
-			onAction: () => {
-				console.log('Optionally, you can handle the clicking of the action button here');
-			},
+			isMultiAction: true, // enable multiple action buttons
+			actions: [
+				{
+					actionButtonLabel: 'View Details',
+					onAction: () => {
+						alert('View details action clicked');
+					},
+					buttonType: 'tertiary',
+				},
+				{
+					actionButtonLabel: 'Export',
+					onAction: () => {
+						alert('Export action clicked');
+					},
+				},
+			],
 			onClose: () => {
 				console.log('Optionally, you can handle the close event here');
 			},
@@ -266,12 +288,13 @@
 						id: 'markToSync',
 						label: 'Mark to Sync',
 						onAction: markToSync,
+						actionInfo: { extensionId: extensionId },
 					},
 					{
 						id: 'unmarkToSync',
 						label: 'Unmark to Sync',
 						onAction: unMarkToSync,
-						actionInfo: { enabled: false },
+						actionInfo: { enabled: false, extensionId: extensionId },
 					},
 					{
 						id: 'updatedPartsAction',
@@ -283,6 +306,7 @@
 							// the applicableTo is used to only apply the action to the specific element type defined in the array.
 							// meaning the 'Updated Parts Action' option will only be visible for the 'PartUsage' element types in the Explorer Overflow Menu
 							applicableTo: ['PartUsage'],
+							extensionId: extensionId,
 						},
 					},
 				],
@@ -305,12 +329,12 @@
 				{
 					elementId: elementId,
 					actionId: 'markToSync',
-					actionInfo: { enabled: false },
+					actionInfo: { enabled: false, extensionId: extensionId },
 				},
 				{
 					elementId: elementId,
 					actionId: 'unmarkToSync',
-					actionInfo: { enabled: true },
+					actionInfo: { enabled: true, extensionId: extensionId },
 				},
 			]);
 		});
@@ -330,12 +354,12 @@
 				{
 					elementId: elementId,
 					actionId: 'markToSync',
-					actionInfo: { enabled: true },
+					actionInfo: { enabled: true, extensionId: extensionId },
 				},
 				{
 					elementId: elementId,
 					actionId: 'unmarkToSync',
-					actionInfo: { enabled: false },
+					actionInfo: { enabled: false, extensionId: extensionId },
 				},
 			]);
 		});
