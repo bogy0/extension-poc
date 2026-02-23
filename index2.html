@@ -133,7 +133,7 @@
 			});
 			item.addEventListener('dragend', function (e) {
 				e.target.classList.remove('dragging');
-				postToParent(EXTERNAL_DRAG_END);
+				postToParent(EXTERNAL_DRAG_END, { clientX: e.clientX, clientY: e.clientY });
 			});
 		});
 	</script>
