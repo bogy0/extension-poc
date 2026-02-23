@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Extension Embed - Drag Test</title>
+	<style>
+		body {
+			font-family: 'IBM Plex Sans', system-ui, sans-serif;
+			padding: 1rem;
+			background: #f4f4f4;
+			margin: 0;
+		}
+		h1 {
+			font-size: 1.25rem;
+			margin: 0 0 1rem 0;
+			color: #161616;
+		}
+		.requirements-list {
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+		}
+		.requirement-item {
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+			padding: 0.5rem 0.75rem;
+			background: #ffffff;
+			border: 1px solid #e0e0e0;
+			border-radius: 4px;
+			cursor: grab;
+			user-select: none;
+			transition: box-shadow 0.15s, border-color 0.15s;
+		}
+		.requirement-item:hover {
+			border-color: #0f62fe;
+			box-shadow: 0 2px 6px rgba(15, 98, 254, 0.2);
+		}
+		.requirement-item:active {
+			cursor: grabbing;
+		}
+		.requirement-item.dragging {
+			opacity: 0.5;
+		}
+		.requirement-icon {
+			width: 20px;
+			height: 20px;
+			background: #0f62fe;
+			border-radius: 2px;
+			flex-shrink: 0;
+		}
+		.requirement-id {
+			font-weight: 600;
+			color: #525252;
+		}
+		.requirement-text {
+			color: #161616;
+		}
+		.hint {
+			margin-top: 1rem;
+			font-size: 0.75rem;
+			color: #6f6f6f;
+		}
+	</style>
+</head>
+<body>
+	<h1>External Requirements</h1>
+	<p class="hint">Drag a requirement onto the Model Browser (ExplorerView) to create a Requirement usage.</p>
+	<div class="requirements-list" id="requirements-list">
+		<div
+			class="requirement-item"
+			draggable="true"
+			data-requirement-id="REQ-001"
+			data-requirement-type="Requirement"
+			data-requirement-name="System shall support authentication"
+		>
+			<span class="requirement-icon"></span>
+			<span class="requirement-id">REQ-001</span>
+			<span class="requirement-text">System shall support authentication</span>
+		</div>
+		<div
+			class="requirement-item"
+			draggable="true"
+			data-requirement-id="REQ-002"
+			data-requirement-type="Requirement"
+			data-requirement-name="System shall validate user input"
+		>
+			<span class="requirement-icon"></span>
+			<span class="requirement-id">REQ-002</span>
+			<span class="requirement-text">System shall validate user input</span>
+		</div>
+		<div
+			class="requirement-item"
+			draggable="true"
+			data-requirement-id="REQ-003"
+			data-requirement-type="Requirement"
+			data-requirement-name="System shall log audit events"
+		>
+			<span class="requirement-icon"></span>
+			<span class="requirement-id">REQ-003</span>
+			<span class="requirement-text">System shall log audit events</span>
+		</div>
+	</div>
+
+	<script>
+		var EXTERNAL_DRAG_START = 'EXTERNAL_DRAG_START';
+		var EXTERNAL_DRAG_END = 'EXTERNAL_DRAG_END';
+
+		function getExtensionId() {
+			var frame = window.frameElement;
+			if (frame && frame.id) return frame.id;
+			return 'error-determining-extension-id';
+		}
+
+		function postToParent(type, data) {
+			if (window.parent && window.parent !== window) {
+				window.parent.postMessage({ type: type, data: data, extensionId: getExtensionId() }, '*');
+			}
+		}
+
+		var items = document.querySelectorAll('.requirement-item');
+		items.forEach(function (item) {
+			item.addEventListener('dragstart', function (e) {
+				e.target.classList.add('dragging');
+				var data = {
+					requirementId: item.dataset.requirementId,
+					requirementType: item.dataset.requirementType,
+					requirementName: item.dataset.requirementName,
+				};
+				e.dataTransfer.effectAllowed = 'copy';
+				postToParent(EXTERNAL_DRAG_START, data);
+			});
+			item.addEventListener('dragend', function (e) {
+				e.target.classList.remove('dragging');
+				postToParent(EXTERNAL_DRAG_END);
+			});
+		});
+	</script>
+</body>
+</html>
