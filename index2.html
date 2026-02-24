@@ -69,9 +69,9 @@
 	<p class="hint">Drag a requirement onto the Model Browser (ExplorerView) to create a Requirement usage.</p>
 	<h5>Debug:</h5>
 	<div class="debug-info">
-		<p>Parent URL: <span id="parent-url"></span></p>
-		<p>Parent Origin: <span id="parent-origin"></span></p>
-		<p>Parent Referrer: <span id="parent-referrer"></span></p>
+		<p>Parent URL: <span id="url"></span></p>
+		<p>Parent Origin: <span id="origin"></span></p>
+		<p>AncestorOrigins: <span id="ancestor-origins"></span></p>
 	</div>
 	<div class="requirements-list" id="requirements-list">
 		<div
@@ -122,9 +122,9 @@
 		}
 
 		function updateDebugInfo(data) {
-			document.getElementById('parent-url').textContent = window.location.href;
-			document.getElementById('parent-origin').textContent = window.location.origin;
-			document.getElementById('parent-referrer').textContent = window.referrer;
+			document.getElementById('url').textContent = window.location.href;
+			document.getElementById('origin').textContent = window.location.origin;
+			document.getElementById('ancestor-origins').textContent = window.location.ancestorOrigins;
 		}
 
 		updateDebugInfo();
