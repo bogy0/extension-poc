@@ -71,6 +71,7 @@
 	<div class="debug-info">
 		<p>Parent URL: <span id="parent-url"></span></p>
 		<p>Parent Origin: <span id="parent-origin"></span></p>
+		<p>Parent Referrer: <span id="parent-referrer"></span></p>
 	</div>
 	<div class="requirements-list" id="requirements-list">
 		<div
@@ -123,6 +124,7 @@
 		function updateDebugInfo(data) {
 			document.getElementById('parent-url').textContent = window.location.href;
 			document.getElementById('parent-origin').textContent = window.location.origin;
+			document.getElementById('parent-referrer').textContent = window.referrer;
 		}
 
 		updateDebugInfo();
