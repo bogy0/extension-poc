@@ -106,6 +106,7 @@
 	<script>
 		var EXTERNAL_DRAG_START = 'EXTERNAL_DRAG_START';
 		var EXTERNAL_DRAG_END = 'EXTERNAL_DRAG_END';
+		var EXTERNAL_DRAG_MOVE = 'EXTERNAL_DRAG_MOVE';
 
 		function getExtensionId() {
 			var frame = window.frameElement;
@@ -132,6 +133,14 @@
 				e.dataTransfer.setData('text/plain', item.dataset.requirementId);
 				postToParent(EXTERNAL_DRAG_START, data);
 			});
+			
+			item.addEventListener('drag', function (e) {
+				// Send mouse position during drag
+				if (e.clientX !== 0 || e.clientY !== 0) {
+					postToParent(EXTERNAL_DRAG_MOVE, { x: e.clientX, y: e.clientY });
+				}
+			});
+			
 			item.addEventListener('dragend', function (e) {
 				e.target.classList.remove('dragging');
 				postToParent(EXTERNAL_DRAG_END, {});
