@@ -125,6 +125,8 @@
 			document.getElementById('parent-origin').textContent = window.location.origin;
 		}
 
+		updateDebugInfo();
+
 		var items = document.querySelectorAll('.requirement-item');
 		items.forEach(function (item) {
 			item.addEventListener('dragstart', function (e) {
