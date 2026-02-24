@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Extension Embed - Drag Test</title>
+	<title>Extension Embed - Drag Test 2</title>
 	<style>
 		body {
 			font-family: 'IBM Plex Sans', system-ui, sans-serif;
@@ -107,6 +107,7 @@
 		var EXTERNAL_DRAG_START = 'EXTERNAL_DRAG_START';
 		var EXTERNAL_DRAG_END = 'EXTERNAL_DRAG_END';
 		var EXTERNAL_DRAG_MOVE = 'EXTERNAL_DRAG_MOVE';
+		var activeDragData = null;
 
 		function getExtensionId() {
 			var frame = window.frameElement;
@@ -124,14 +125,14 @@
 		items.forEach(function (item) {
 			item.addEventListener('dragstart', function (e) {
 				e.target.classList.add('dragging');
-				var data = {
+				activeDragData = {
 					requirementId: item.dataset.requirementId,
 					requirementType: item.dataset.requirementType,
 					requirementName: item.dataset.requirementName,
 				};
 				e.dataTransfer.effectAllowed = 'copy';
 				e.dataTransfer.setData('text/plain', item.dataset.requirementId);
-				postToParent(EXTERNAL_DRAG_START, data);
+				postToParent(EXTERNAL_DRAG_START, activeDragData);
 			});
 			
 			item.addEventListener('drag', function (e) {
@@ -143,7 +144,14 @@
 			
 			item.addEventListener('dragend', function (e) {
 				e.target.classList.remove('dragging');
-				postToParent(EXTERNAL_DRAG_END, {});
+				postToParent(EXTERNAL_DRAG_END, {
+					x: e.clientX,
+					y: e.clientY,
+					pageX: e.pageX,
+					pageY: e.pageY,
+					dragData: activeDragData,
+				});
+				activeDragData = null;
 			});
 		});
 	</script>
