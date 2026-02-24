@@ -124,7 +124,7 @@
 		function updateDebugInfo(data) {
 			document.getElementById('url').textContent = window.location.href;
 			document.getElementById('origin').textContent = window.location.origin;
-			document.getElementById('ancestor-origins').textContent = window.location.ancestorOrigins;
+			document.getElementById('ancestor-origins').textContent = window.location.ancestorOrigins[0];
 		}
 
 		updateDebugInfo();
