@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Extension Embed - Drag Test 2</title>
+	<title>Extension Embed - Drag Test</title>
 	<style>
 		body {
 			font-family: 'IBM Plex Sans', system-ui, sans-serif;
@@ -67,6 +67,21 @@
 <body>
 	<h1>External Requirements</h1>
 	<p class="hint">Drag a requirement onto the Model Browser (ExplorerView) to create a Requirement usage.</p>
+	<h5>Debug:</h5>
+	<div class="debug-info">
+		<p>Extension ID: <span id="extension-id"></span></p>
+		<p>Drag Start: <span id="drag-start-time"></span></p>
+		<p>Drag End: <span id="drag-end-time"></span></p>
+		<p>Drag Duration: <span id="drag-duration"></span>ms</p>
+		<p>Parent URL: <span id="parent-url"></span></p>
+		<p>Parent Origin: <span id="parent-origin"></span></p>
+		<p>Parent PostMessage: <span id="parent-postmessage"></span></p>
+		<p>Parent PostMessage Data: <span id="parent-postmessage-data"></span></p>
+		<p>Parent PostMessage Data Type: <span id="parent-postmessage-data-type"></span></p>
+		<p>Parent PostMessage Data Transfer: <span id="parent-postmessage-data-transfer"></span></p>
+		<p>Parent PostMessage Data Transfer Type: <span id="parent-postmessage-data-transfer-type"></span></p>
+		<p>Parent PostMessage Data Transfer Data: <span id="parent-postmessage-data-transfer-data"></span></p>
+	</div>
 	<div class="requirements-list" id="requirements-list">
 		<div
 			class="requirement-item"
@@ -108,8 +123,51 @@
 		var EXTERNAL_DRAG_END = 'EXTERNAL_DRAG_END';
 		var EXTERNAL_DRAG_MOVE = 'EXTERNAL_DRAG_MOVE';
 		var activeDragData = null;
+		var dragStartTimeMs = null;
+
+		function setDebugValue(id, value) {
+			var element = document.getElementById(id);
+			if (!element) return;
+			element.textContent = value === undefined || value === null || value === '' ? '-' : String(value);
+		}
+
+		function toJsonString(value) {
+			try {
+				return JSON.stringify(value);
+			} catch (_error) {
+				return '[unserializable]';
+			}
+		}
+
+		function getValueType(value) {
+			if (value === null) return 'null';
+			if (Array.isArray(value)) return 'array';
+			return typeof value;
+		}
+
+		function getParentOrigin() {
+			if (!document.referrer) return '-';
+			try {
+				return new URL(document.referrer).origin;
+			} catch (_error) {
+				return '-';
+			}
+		}
+
+		function updateMessageDebug(data, transfer) {
+			setDebugValue('parent-postmessage-data', toJsonString(data));
+			setDebugValue('parent-postmessage-data-type', getValueType(data));
+			setDebugValue('parent-postmessage-data-transfer', toJsonString(transfer));
+			setDebugValue('parent-postmessage-data-transfer-type', getValueType(transfer));
+			if (transfer && transfer.length > 0) {
+				setDebugValue('parent-postmessage-data-transfer-data', getValueType(transfer[0]));
+				return;
+			}
+			setDebugValue('parent-postmessage-data-transfer-data', '-');
+		}
 
 		function getExtensionId() {
+			console.log(window);
 			var frame = window.frameElement;
 			if (frame && frame.id) return frame.id;
 			return 'error-determining-extension-id';
@@ -117,14 +175,38 @@
 
 		function postToParent(type, data) {
 			if (window.parent && window.parent !== window) {
-				window.parent.postMessage({ type: type, data: data, extensionId: getExtensionId() }, '*');
+				var message = { type: type, data: data, extensionId: getExtensionId() };
+				window.parent.postMessage(message, '*');
+				setDebugValue('parent-postmessage', 'sent:' + type);
+				updateMessageDebug(message, []);
 			}
 		}
+
+		window.addEventListener('message', function (event) {
+			setDebugValue('parent-postmessage', 'received');
+			setDebugValue('parent-origin', event.origin || getParentOrigin());
+			updateMessageDebug(event.data, []);
+		});
+
+		setDebugValue('extension-id', getExtensionId());
+		setDebugValue('parent-url', document.referrer || '-');
+		setDebugValue('parent-origin', getParentOrigin());
+		setDebugValue('drag-start-time', '-');
+		setDebugValue('drag-end-time', '-');
+		setDebugValue('drag-duration', '-');
+		setDebugValue('parent-postmessage', '-');
+		setDebugValue('parent-postmessage-data', '-');
+		setDebugValue('parent-postmessage-data-type', '-');
+		setDebugValue('parent-postmessage-data-transfer', '-');
+		setDebugValue('parent-postmessage-data-transfer-type', '-');
+		setDebugValue('parent-postmessage-data-transfer-data', '-');
 
 		var items = document.querySelectorAll('.requirement-item');
 		items.forEach(function (item) {
 			item.addEventListener('dragstart', function (e) {
 				e.target.classList.add('dragging');
+				dragStartTimeMs = Date.now();
+				setDebugValue('drag-start-time', new Date(dragStartTimeMs).toISOString());
 				activeDragData = {
 					requirementId: item.dataset.requirementId,
 					requirementType: item.dataset.requirementType,
@@ -144,6 +226,9 @@
 			
 			item.addEventListener('dragend', function (e) {
 				e.target.classList.remove('dragging');
+				var dragEndTimeMs = Date.now();
+				setDebugValue('drag-end-time', new Date(dragEndTimeMs).toISOString());
+				if (dragStartTimeMs !== null) setDebugValue('drag-duration', dragEndTimeMs - dragStartTimeMs);
 				postToParent(EXTERNAL_DRAG_END, {
 					x: e.clientX,
 					y: e.clientY,
